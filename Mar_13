@@ -27,27 +27,41 @@ def integrate(f,a,b,n,method = None):
         areas.append((np.array([f((xs[i]+xs[i+1])/2) for i in range(n)])*(b-a)/n).sum()) #midpoint
         areas.append((np.array([(f(xs[i])+f(xs[i+1]))/2 for i in range(n)])*(b-a)/n).sum()) #trapezoidal
         return areas
-        
-def Simpson(f,a,b,n, printout = True): #Simpson's Rule
-###Caution! : if function f is constant function, it won't work (Error will be printed by np.linagl.solve)
+ 
+ 
+ def Simpson(f,a,b,n, parabola = True):
+ ###Caution! : if function f is constant function, it won't work (Error will be printed by np.linagl.solve)
     if n % 2 != 0: # n should be an even integer
         print("n should be an even number.")
     else:
-        xs = [i * (b-a)/n for i in range(n+1)] # divide the interval 
-        areas = []
-        for i in range(int(n/2)): # repeat for n/2 times 
-            x = np.array([xs[2*i], xs[2*i+1], xs[2*i+2]]) #These three points will determine the parabola
-            y = f(x)  # y_value of the points above
-            # y = ax2+bx+c
-            m = np.array([[x[i]**2, x[i], 1] for i in range(3)]) # make matrix to solve linear equations 
-            coeff = np.linalg.solve(m,y) # the solution of the equations is the coefficient of the parabola 
-            F = lambda x: coeff[0]/3 * x**3 + coeff[1]/2* x**2 + coeff[2]*x #equation of the parabola 
-            areas.append(F(x[2])-F(x[0])) # The Fundamental Theorem of Calculus 2. 
-        areas = np.array(areas) 
-        print(areas.sum())
-        return areas.sum() #Total Area
+        if parabola == True: #Actually Calculuate the parabola
+            xs = [i * (b-a)/n for i in range(n+1)] # divide the interval 
+            areas = []
+            for i in range(int(n/2)): # repeat for n/2 times 
+                x = np.array([xs[2*i], xs[2*i+1], xs[2*i+2]]) #These three points will determine the parabola
+                y = f(x)  # y_value of the points above
+                # y = ax2+bx+c
+                m = np.array([[x[i]**2, x[i], 1] for i in range(3)]) # make matrix to solve linear equations 
+                coeff = np.linalg.solve(m,y) # the solution of the equations is the coefficient of the parabola 
+                print(coeff)
+                F = lambda x: coeff[0]/3 * x**3 + coeff[1]/2* x**2 + coeff[2]*x #equation of the parabola 
+                areas.append(F(x[2])-F(x[0])) # The Fundamental Theorem of Calculus 2. 
+            areas = np.array(areas) 
+            print(areas.sum())
+            return areas.sum() #Total Area
             
-            
+        else:  #Using Simpson's Rule
+            xs = [i * (b-a)/n for i in range(n+1)] # divide the interval 
+            areas = []
+            for i in range(int(n/2)):
+                x = np.array([xs[2*i], xs[2*i+1], xs[2*i+2]])
+                y = f(x[0]) + 4*f(x[1]) + f(x[2])
+                area = y * ((b-a)/n)/3
+                areas.append(area)
+            areas = np.array(areas)
+            print(areas.sum())
+            return areas.sum()       
+
 # example 
 fx = lambda x: x**3-3*x**2+2*x + 3
 sfx = x**3-3*x**2+2*x + 3
