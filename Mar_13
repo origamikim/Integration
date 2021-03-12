@@ -1,0 +1,96 @@
+#20215047 Yooseung Kim, GIST.
+#yooseungkim@gm.gist.ac.kr
+
+import sympy as sym
+x = sym.Symbol('x')
+import numpy as np
+
+def integrate(f,a,b,n,method = None):
+    xs = [ i * (b-a)/n for i in range(n+1)]
+    if method != None:
+        if method == 'left': #Left Endpoint Approximation
+            ys = [f(xs[i]) for i in range(n)] #height of left endpoint
+        elif method == 'right': #Right Endpoint Approximation
+            ys = [f(xs[i+1]) for i in range(n)] #height of right endpoint
+        elif method == 'middle': #Midpoint Approximation
+            ys = [f((xs[i]+xs[i+1])/2) for i in range(n)] #height of midpoint
+        elif method == 'trapezoidal': #Trapezoidal Approximation
+            ys = [(f(xs[i])+f(xs[i+1]))/2 for i in range(n)] #avg. of left and right endpoint
+        ys = np.array(ys) 
+        areas =  ys * (b-a)/n # area = height * width
+        area = areas.sum() # sum of rectangles
+        return area
+    else:
+        areas = []
+        areas.append((np.array([f(xs[i]) for i in range(n)])*(b-a)/n).sum()) #left
+        areas.append((np.array([f(xs[i+1]) for i in range(n)])*(b-a)/n).sum()) #right
+        areas.append((np.array([f((xs[i]+xs[i+1])/2) for i in range(n)])*(b-a)/n).sum()) #midpoint
+        areas.append((np.array([(f(xs[i])+f(xs[i+1]))/2 for i in range(n)])*(b-a)/n).sum()) #trapezoidal
+        return areas
+        
+def Simpson(f,a,b,n, printout = True): #Simpson's Rule
+###Caution! : if function f is constant function, it won't work (Error will be printed by np.linagl.solve)
+    if n % 2 != 0: # n should be an even integer
+        print("n should be an even number.")
+    else:
+        xs = [i * (b-a)/n for i in range(n+1)] # divide the interval 
+        areas = []
+        for i in range(int(n/2)): # repeat for n/2 times 
+            x = np.array([xs[2*i], xs[2*i+1], xs[2*i+2]]) #These three points will determine the parabola
+            y = f(x)  # y_value of the points above
+            # y = ax2+bx+c
+            m = np.array([[x[i]**2, x[i], 1] for i in range(3)]) # make matrix to solve linear equations 
+            coeff = np.linalg.solve(m,y) # the solution of the equations is the coefficient of the parabola 
+            F = lambda x: coeff[0]/3 * x**3 + coeff[1]/2* x**2 + coeff[2]*x #equation of the parabola 
+            areas.append(F(x[2])-F(x[0])) # The Fundamental Theorem of Calculus 2. 
+        areas = np.array(areas) 
+        print(areas.sum())
+        return areas.sum() #Total Area
+            
+            
+# example 
+fx = lambda x: x**3-3*x**2+2*x + 3
+sfx = x**3-3*x**2+2*x + 3
+
+gx = lambda x: np.sin(x)
+sgx = sym.sin(x)
+
+hx = lambda x: 10*x + 7
+shx = 10*x +7
+
+Simpson(fx,0,3,4)
+Simpson(fx,0,3,6)
+Simpson(fx,0,3,10)
+Simpson(fx,0,3,30)
+print(sym.integrate(sfx,(x,0,3)))
+
+Simpson(gx,0,np.pi,4)
+Simpson(gx,0,np.pi,6)
+Simpson(gx,0,np.pi,10)
+Simpson(gx,0,np.pi,30)
+print(float(sym.integrate(sgx,(x,0,sym.pi))))
+
+Simpson(hx,0,2*np.pi,4)
+Simpson(hx,0,2*np.pi,6)
+Simpson(hx,0,2*np.pi,10)
+Simpson(hx,0,2*np.pi,30)
+print(float(sym.integrate(shx,(x,0,2*sym.pi))))
+
+#Outputs
+11.25
+11.250000000000007
+11.25
+11.250000000000007
+45/4
+
+2.0045597549844207
+2.0008631896735363
+2.0001095173150047
+2.000001337947949
+2.0
+
+241.37438517204427
+241.37438517204427
+241.37438517204424
+241.37438517204419
+241.37438517204427
